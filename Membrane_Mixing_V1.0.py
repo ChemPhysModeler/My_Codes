@@ -48,9 +48,9 @@ def calculate_unit_output(P_in_Pa, P_out_Pa, Area_cm2, compMolFlow_in_mols, Perm
         residuals = []
         for compName in compMolFlow_in_mols.keys():
             if Permeance_GPU[compName] == 0 or compMolFlow_in_mols[compName] == 0:
-                eq1 = permMolFlow_mols[compName]
-                eq2 = PPret_cmHg[compName] - compMolFlow_in_mols[compName] / (compMolFlow_in_mols[compName]+1e-6)
-                eq3 = PPperm_cmHg[compName]
+                eq1 = - permMolFlow_mols[compName] / (compMolFlow_in_mols[compName]+1e-6) *1e9
+                eq2 = - PPret_cmHg[compName] + P_in_Pa * 0.00075 * compMolFlow_in_mols[compName] / totalRetMolFlow_mols
+                eq3 = - PPperm_cmHg[compName] / (PPperm_cmHg[compName]+1e-6) *1e9
             else : 
                 eq1 = (- permMolFlow_mols[compName]*22400 + Permeance_GPU[compName]* 1e-6 * (PPret_cmHg[compName] - PPperm_cmHg[compName]) * Area_cm2) / (compMolFlow_in_mols[compName] /100)
                 eq2 = (- PPret_cmHg[compName] + P_in_Pa * 0.00075 * (compMolFlow_in_mols[compName] - permMolFlow_mols[compName])  / totalRetMolFlow_mols ) / (P_in_Pa*0.00075*MolFrac_in[compName])
@@ -151,7 +151,7 @@ else :
     from DWSIM.Thermodynamics import *
 
     inlet = ims1
-    Flowsheet.WriteMessage('import start')
+    #Flowsheet.WriteMessage('import start')
     P_in_Pa = inlet.Phases[0].Properties.pressure
     Temperature = inlet.Phases[0].Properties.temperature
 
@@ -167,14 +167,14 @@ else :
         variablename = str('GPU_' + compName)
         variablename = variablename.replace(' ', '_')
         temp = eval(variablename)
-        if temp == None:
-            Flowsheet.WriteMessage(variablename + 'is null')
-            temp = 1e-9
-        if temp == 0:
-            Flowsheet.WriteMessage(variablename + 'is 0, set to 1e-9')
-            temp = 1e-9
+        #if temp == None:
+        #    Flowsheet.WriteMessage(variablename + 'is null')
+        #    temp = 1e-9
+        #if temp == 0:
+        #    Flowsheet.WriteMessage(variablename + 'is 0, set to 1e-9')
+        #    temp = 1e-9
         Permeance_GPU[compName] = temp
-        Flowsheet.WriteMessage(str(Permeance_GPU[compName]))
+        #Flowsheet.WriteMessage(str(Permeance_GPU[compName]))
         
     compMolFlow_Ret_mols, compMolFlow_Perm_mols = calculate_unit_output(P_in_Pa, P_out_Pa, Area_cm2, compMolFlow_in_mols, Permeance_GPU)
 
